@@ -7,19 +7,19 @@ function Navbar({ auth }: { auth?: boolean }) {
 		<div className="navbar">
 			<div className="flex-1">
 				<Link href="/" className="btn btn-ghost text-2xl">
-					Focus Otter
+					Focus Otter Scheduler
 				</Link>
 			</div>
 			<div className="flex-none">
 				<ul className="menu menu-horizontal px-1">
 					<li>
-						<Link href={'/things'} className="text-lg">
-							List Things
+						<Link href={'/messages'} className="text-lg">
+							View Messages
 						</Link>
 					</li>
 					<li>
-						<Link href={'/things/new'} className="text-lg">
-							New Thing
+						<Link href={'/messages/new'} className="text-lg">
+							Create New Message
 						</Link>
 					</li>
 					{auth && (

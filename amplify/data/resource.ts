@@ -7,11 +7,31 @@ specifies that any unauthenticated user can "create", "read", "update",
 and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-	Todo: a
+	Message: a
 		.model({
-			content: a.string(),
+			message: a.string().required(),
+			//2024-05-09T18:58 is what I need but a.datetime() needs ISO (with timezone)
+			deliveryDate: a.string().required(),
+			email: a.email().required(),
+			timezone: a.string().required(),
 		})
-		.authorization((allow) => [allow.guest()]),
+		.authorization((allow) => [allow.owner()]),
+	createMessageSchedule: a
+		.mutation()
+		.arguments({
+			message: a.string().required(),
+			deliveryDate: a.string().required(),
+			email: a.email().required(),
+			timezone: a.string().required(),
+		})
+		.returns(a.ref('Message'))
+		.authorization((allow) => [allow.authenticated()])
+		.handler([
+			a.handler.custom({
+				dataSource: a.ref('Message'),
+				entry: './createMessage.js',
+			}),
+		]),
 })
 
 export type Schema = ClientSchema<typeof schema>
@@ -19,7 +39,7 @@ export type Schema = ClientSchema<typeof schema>
 export const data = defineData({
 	schema,
 	authorizationModes: {
-		defaultAuthorizationMode: 'iam',
+		defaultAuthorizationMode: 'userPool',
 	},
 })
 

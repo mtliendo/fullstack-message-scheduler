@@ -15,7 +15,7 @@ function AuthPage() {
 					<Authenticator>
 						{() => {
 							// I'm sure there's some slick way of doing this, but whatevs
-							redirect('/things')
+							redirect('/messages')
 						}}
 					</Authenticator>
 				</div>

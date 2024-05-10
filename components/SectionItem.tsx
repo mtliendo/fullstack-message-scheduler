@@ -1,11 +1,11 @@
+import Link from 'next/link'
 import React from 'react'
 type SectionItemProps = {
 	title: string
 	description: string
 	img: string
-	btnText: string
 }
-function SectionItem({ title, description, img, btnText }: SectionItemProps) {
+function SectionItem({ title, description, img }: SectionItemProps) {
 	return (
 		<div
 			data-theme="emerald"
@@ -17,9 +17,6 @@ function SectionItem({ title, description, img, btnText }: SectionItemProps) {
 			<div className="card-body">
 				<h2 className="card-title">{title}</h2>
 				<p>{description}</p>
-				<div className="card-actions justify-end">
-					<button className="btn btn-primary">{btnText}</button>
-				</div>
 			</div>
 		</div>
 	)

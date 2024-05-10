@@ -29,24 +29,16 @@ export default function Home() {
 				</h1>
 				<div className="flex justify-start">
 					<SectionItem
-						title="New album is released!"
-						description="Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates
-					asperiores incidunt quas aspernatur, recusandae magnam odit nostrum
-					necessitatibus similique laborum iste sunt, vero doloremque obcaecati
-					corporis dolores? Quam, soluta praesentium!"
+						title="Why this project"
+						description="I was at the dentist no too long ago and when I was finished, they asked me if I would like to schedule my next appointment. It was odd to me that they just gave me a card with the date. I thought about what it would be like to create a scheduling system that I could use for myself."
 						img="https://img.daisyui.com/images/stock/photo-1494232410401-ad00d5433cfa.jpg"
-						btnText="Listen"
 					/>
 				</div>
 				<div className="flex justify-end">
 					<SectionItem
-						title="New album is released!"
-						description="Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptates
-					asperiores incidunt quas aspernatur, recusandae magnam odit nostrum
-					necessitatibus similique laborum iste sunt, vero doloremque obcaecati
-					corporis dolores? Quam, soluta praesentium!"
+						title="Project Hiccups"
+						description="I initially wanted to have users sign up with their phone number and use the Twilio API to send a text message. Totally doable, but the process for setting up SMS auth with AWS involes a 2 week review to make sure spam messages aren't sent 😩 I'll revisit this once I'm approved!"
 						img="https://img.daisyui.com/images/stock/photo-1494232410401-ad00d5433cfa.jpg"
-						btnText="Listen"
 					/>
 				</div>
 				<div
