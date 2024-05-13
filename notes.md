@@ -405,3 +405,120 @@ Gonna swap this out in my UI:
 ```
 
 Granted, I tested this all out in the AppSync Console ahead of time, but this worked the first time in the UI :)
+
+## Scheduling Events with EventBridge Scheduler
+
+I can't imagine this being tough. It's an http datasource just like Bedrock and [the docs on creating a schedule](https://docs.aws.amazon.com/scheduler/latest/APIReference/API_CreateSchedule.html) are pretty standard.
+
+I created the datasource. To get the signing service endpoint I use [this page](https://docs.aws.amazon.com/general/latest/gr/aws-service-information.html). I kinda guessed on the signing-service name🤷‍♂️
+
+This is attempt number 1, logs and all!:
+
+```js
+export function request(ctx) {
+	console.log('hi im the request')
+	console.log('the previouss', ctx.prev)
+	return {
+		resourcePath: '/schedules/TestOtter', //!This needs to be dynamic
+		method: 'POST',
+		params: {
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: {
+				ActionAfterCompletion: 'DELETE',
+				ScheduleExpression: `at(${ctx.prev.result.deliveryTime})`,
+				ScheduleExpressionTimezone: ctx.prev.result.timezone,
+				Target: {
+					Arn: ctx.env.SCHEDULE_FUNCTION_ARN,
+					RoleArn: ctx.env.SCHEDULE_FUNCTION_ROLE_ARN,
+					Input: { messageId: ctx.prev.result.id },
+				},
+			},
+		},
+	}
+}
+export function response(ctx) {
+	console.log('hi im the response', ctx.result)
+	const parsedBody = JSON.parse(ctx.result.body)
+
+	console.log('hi im the parsed body', parsedBody)
+	return parsedBody
+}
+```
+
+This all assumes I call the endpoint and have a function in place. I'm just going to create a super basic function and give it the ability to access my table. Speaking of, I'll also create a role for the scheduler to assume when it's invoked. In this case, I think it's just the ability to `invoke:function`.
+
+--fast forward a day of troubleshooting--
+
+So, I have a circular dep issue.
+
+![circle dep issue](./readmeImages/SMSScheduler-dep-issue.png)
+
+It's between data and the function. Essentially, the Lambda function that EB Schedueler calls needs the ability to get an item from the database:
+
+```ts
+//create a policy for the function to get data from the MessagesTable
+// table ARN is accessed by going through the API (backend.data)
+backend.sendSESEmailFunc.resources.lambda.addToRolePolicy(
+	new PolicyStatement({
+		actions: ['dynamodb:GetItem'],
+		resources: [backend.data.resources.tables['Message'].tableArn],
+	})
+)
+```
+
+But my data API needs the ARN of the function:
+
+```ts
+backend.data.resources.cfnResources.cfnGraphqlApi.environmentVariables = {
+	SCHEDULE_FUNCTION_ROLE_ARN: schedulerRole.roleArn,
+	SCHEDULE_FUNCTION_ARN: backend.sendSESEmailFunc.resources.lambda.functionArn,
+}
+```
+
+This is a problem. So I can't hardcode the function name since if I name my function "test" it's still going to be "amplify-test-randomId".
+
+A app that has a function that accesses the backend db is a common pattern ie postConfirmation triggers. How would those be handled?
+
+Ah--I found in the Amplify docs this:https://docs.amplify.aws/react/build-a-backend/functions/examples/create-user-profile-record/#pageMain
+
+So essentially, you go through the API. Ok--I can do that.
+
+I updated my API to allow the function, but I only want to allow it to access my 1 mutation.
+
+So instead of this:
+
+```ts
+.authorization((allow) => [allow.resource(sendSESEmailFunc).to(['mutate'])])
+```
+
+I want this:
+
+```ts
+.authorization((allow) => [
+		allow.resource(sendSESEmailFunc).to({ mutate: ['createMessageSchedule'] }),
+	])
+```
+
+Ok--this is acceptable and I'll consider myself unblocked. I make a couple tweaks to my schema since apparently I need a `ClientToken`. The SDK will create this for me, but apparently the CLI command won't.
+
+I'm not able to create my schedule. I try it again, it didn't work.
+
+Oh, I need to give it a unique name. Reminder to update my schema to do that..but that should by dynamic since people can conflict with the names. I'll come back to this.
+
+The docs, give this command to run, which I'll modify:
+
+```sh
+npx ampx generate graphql-client-code --out <path-to-post-confirmation-handler-dir>/graphql
+```
+
+to be this:
+
+```sh
+npx ampx generate graphql-client-code --out amplify/functions/sendEmail/graphql --profile focus-otter-youtube
+```
+
+So this is also how to call AppSync from a Lambda function 😮
+
+I update my function and it works! Im pretty much just experimenting with things at this point. I added a way to pass a title from the frontend so that it's dynamic. Calling this project good. It took longer than expected, but learned a bunch a long the way!

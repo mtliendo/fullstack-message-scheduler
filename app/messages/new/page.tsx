@@ -19,12 +19,12 @@ async function NewThingPage() {
 			deliveryDate: formData.get('date') as string,
 			email: formData.get('email') as string,
 			timezone: formData.get('timezone') as string,
+			title: formData.get('title') as string,
 		}
 		console.log(rawFormData)
 
 		//mutate the data
 		try {
-			// const res = await cookiesClient.models.Message.create(rawFormData)
 			const res = await cookiesClient.mutations.createMessageSchedule(
 				rawFormData
 			)
@@ -42,37 +42,46 @@ async function NewThingPage() {
 	return (
 		<div>
 			<Navbar auth />
-			Messages will be sent based on your browsers current timezone.
-			<form action={createNewThing}>
-				<div className="label">
-					<span className="label-text">Enter a message</span>
-				</div>
-				<input
-					required
-					className="input input-accent"
-					name="message"
-					type="text"
-				/>
-				<div className="label">
-					<span className="label-text">Enter a delivery time</span>
-				</div>
-				<input
-					required
-					className="input input-accent"
-					name="date"
-					type="datetime-local"
-				/>
-				<input required type="hidden" name="timezone" value={userTimeZone} />
-				<input
-					required
-					type="hidden"
-					name="email"
-					value={user?.signInDetails?.loginId}
-				/>
-				<div>
-					<SubmitButton />
-				</div>
-			</form>
+			<p className="text-center">
+				Messages will be sent based on your browsers current timezone.
+			</p>
+
+			<div className="flex justify-center content-center">
+				<form action={createNewThing}>
+					<div className="label">
+						<span className="label-text">Enter a title</span>
+					</div>
+					<input
+						required
+						className="input input-accent"
+						name="title"
+						type="text"
+					/>
+					<div className="label">
+						<span className="label-text">Enter a message</span>
+					</div>
+					<textarea required className="input input-accent" name="message" />
+					<div className="label">
+						<span className="label-text">Enter a delivery time</span>
+					</div>
+					<input
+						required
+						className="input input-accent"
+						name="date"
+						type="datetime-local"
+					/>
+					<input required type="hidden" name="timezone" value={userTimeZone} />
+					<input
+						required
+						type="hidden"
+						name="email"
+						value={user?.signInDetails?.loginId}
+					/>
+					<div>
+						<SubmitButton />
+					</div>
+				</form>
+			</div>
 		</div>
 	)
 }
